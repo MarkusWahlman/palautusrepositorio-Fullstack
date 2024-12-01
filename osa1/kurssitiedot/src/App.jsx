@@ -28,10 +28,10 @@ const App = () => {
         title={course.name}
       />
       <Content
-        parts={parts}
+        parts={course.parts}
       />
       <Total 
-        parts={parts}
+        parts={course.parts}
       />
     </div>
   )
