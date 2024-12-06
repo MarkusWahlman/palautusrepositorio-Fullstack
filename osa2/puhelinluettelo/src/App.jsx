@@ -2,20 +2,26 @@ import { useState, useEffect } from 'react'
 import { PersonList } from './components/PersonList'
 import { AddPersonForm } from './components/AddPersonForm'
 import personService from './services/persons'
+import { Notification } from './components/Notification'
 
 const App = () => {
   const [searchString, setSearchString] = useState('')
 
-  const [persons, setPersons] = useState([]) 
+  const [persons, setPersons] = useState(null) 
   const [newName, setNewName] = useState('')
   const [newPhone, setNewPhone] = useState('')
-  
+  const [notificationObject, setNotificationObject] = useState(null)
+
   useEffect(() => {
     personService.getAll()
       .then(response => {
         setPersons(response.data)
       })
   }, [])
+
+  if (!persons) {     
+    return null 
+  }
 
   const personsToShow = searchString ? persons.filter(person => 
     person.name.toLowerCase().includes(searchString.toLowerCase())
@@ -26,6 +32,18 @@ const App = () => {
       personService.delete(person.id)
       setPersons(persons.filter(curPerson => curPerson.id !== person.id));
     }
+  }
+
+  const showTimedNotification = (message, color) => {
+    setNotificationObject(
+      {
+        message,
+        color
+      }
+    )
+    setTimeout(() => {
+      setNotificationObject(null)
+    }, 5000)
   }
 
   const addPerson = (event) => {
@@ -51,6 +69,17 @@ const App = () => {
               ? { ...person, name: responseData.name, number: responseData.number } 
               : person
           ));
+          showTimedNotification(
+              `Updated ${newName}`,
+              'green'
+          )
+        }).catch((error)=>{
+          if(error.status === 404){
+            showTimedNotification(
+                `Information of ${newName} has already been removed from server`,
+                'red'
+            )
+          }
         })
       }
       return
@@ -65,9 +94,12 @@ const App = () => {
           number: responseData.number,
           id: responseData.id
         }])
+        
+        showTimedNotification(
+          `Added ${newName}`,
+          'green'
+        )
       })
-
-
   }
 
   const handleNameChange = (event) => {
@@ -85,6 +117,9 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification 
+        notificationObject={notificationObject}
+      />
       <span>filter shown with </span>
       <input onChange={handleSearchChange} />
 
