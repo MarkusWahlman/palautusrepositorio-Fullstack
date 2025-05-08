@@ -13,5 +13,10 @@
   "devDependencies": {
     "tsx": "^4.19.4",
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mongoose": "^8.14.1"
   }
 }
