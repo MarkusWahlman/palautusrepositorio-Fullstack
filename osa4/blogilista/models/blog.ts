@@ -1,20 +1,19 @@
-
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 interface IBlog extends Document {
-    title: string;
-    author: string;
-    url: string;
-    likes: number;
-  }
-  
-  const blogSchema: Schema = new Schema<IBlog>({
-    title: { type: String, required: true },
-    author: { type: String, required: true },
-    url: { type: String, required: true },
-    likes: { type: Number, default: 0 },
-  });
+  title: string;
+  author: string;
+  url: string;
+  likes: number;
+}
 
-  const Blog = mongoose.model<IBlog>("Blog", blogSchema);
+const blogSchema: Schema = new Schema<IBlog>({
+  title: { type: String, required: true },
+  author: { type: String, required: true },
+  url: { type: String, required: true },
+  likes: { type: Number, default: 0 },
+});
 
-  export { Blog };
+const Blog = mongoose.model<IBlog>("Blog", blogSchema);
+
+export { Blog };
