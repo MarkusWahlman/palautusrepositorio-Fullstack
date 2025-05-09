@@ -6,13 +6,15 @@
   "scripts": {
     "start": "tsx index.ts",
     "dev": "tsx watch index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "glob -c \"tsx --test --test-reporter spec \" \"./tests/**/*.test.ts\""
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
     "@types/node": "^22.15.17",
+    "glob": "^11.0.2",
+    "node-test": "^1.4.6",
     "tsx": "^4.19.4",
     "typescript": "^5.7.2"
   },
@@ -20,6 +22,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "lodash": "^4.17.21",
     "mongoose": "^8.14.1"
   }
 }

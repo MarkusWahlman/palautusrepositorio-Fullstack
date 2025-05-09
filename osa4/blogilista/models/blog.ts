@@ -16,4 +16,4 @@ const blogSchema: Schema = new Schema<IBlog>({
 
 const Blog = mongoose.model<IBlog>("Blog", blogSchema);
 
-export { Blog };
+export { IBlog, Blog };
