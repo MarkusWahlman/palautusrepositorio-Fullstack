@@ -1,25 +1,11 @@
-import express, { Router, Request, Response } from "express";
-import { Blog } from "../models/blog";
+import { Router } from "express";
+import { blogController } from "../controllers/BlogsController";
 
 const router = Router();
 
-router.get("/", async (req: Request, res: Response) => {
-  try {
-    const blogs = await Blog.find({});
-    res.json(blogs);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch blogs" });
-  }
-});
-
-router.post("/", async (req: Request, res: Response) => {
-  try {
-    const blog = new Blog(req.body);
-    const savedBlog = await blog.save();
-    res.status(201).json(savedBlog);
-  } catch (error) {
-    res.status(400).json({ error: "Failed to save blog" });
-  }
-});
+router.get("/", blogController.getAllBlogs);
+router.post("/", blogController.createBlog);
+router.patch("/:id", blogController.updateBlog);
+router.delete("/:id", blogController.deleteBlog);
 
 export { router as blogsRouter };
