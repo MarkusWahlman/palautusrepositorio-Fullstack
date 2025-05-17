@@ -1,10 +1,12 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { IUser } from "./user";
 
 interface IBlog extends Document {
   title: string;
   author: string;
   url: string;
   likes: number;
+  user: IUser;
 }
 
 const blogSchema: Schema = new Schema<IBlog>({
@@ -12,6 +14,10 @@ const blogSchema: Schema = new Schema<IBlog>({
   author: { type: String, required: true },
   url: { type: String, required: true },
   likes: { type: Number, default: 0 },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
 });
 
 blogSchema.set("toJSON", {

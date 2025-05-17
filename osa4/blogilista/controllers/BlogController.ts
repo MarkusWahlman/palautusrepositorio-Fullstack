@@ -1,10 +1,14 @@
 import { Request, Response } from "express";
 import { Blog } from "../models/blog";
+import { User } from "../models/user";
 
 export const blogController = {
   async getAllBlogs(req: Request, res: Response) {
     try {
-      const blogs = await Blog.find({});
+      const blogs = await Blog.find({}).populate("user", {
+        username: 1,
+        name: 1,
+      });
       res.json(blogs);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch blogs" });
@@ -13,8 +17,25 @@ export const blogController = {
 
   async createBlog(req: Request, res: Response) {
     try {
-      const blog = new Blog(req.body);
+      const body = req.body;
+
+      const user = await User.findById(body.userId);
+      if (!user) {
+        res.status(400).json({ error: "userId missing or not valid" });
+        return;
+      }
+
+      const blogData = { ...body };
+      delete blogData.userId;
+      const blog = new Blog({
+        ...blogData,
+        user: user.id,
+      });
       const savedBlog = await blog.save();
+
+      user.blogs = user.blogs.concat(savedBlog.id);
+      await user.save();
+
       res.status(201).json(savedBlog);
     } catch (error) {
       res.status(400).json({ error: "Failed to save blog" });
