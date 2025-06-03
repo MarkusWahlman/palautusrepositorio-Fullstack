@@ -19,7 +19,7 @@ export const blogController = {
     try {
       const body = req.body;
 
-      const user = await User.findById(body.userId);
+      const user = await User.findById(req.user.id);
       if (!user) {
         res.status(400).json({ error: "userId missing or not valid" });
         return;
@@ -33,29 +33,39 @@ export const blogController = {
       });
       const savedBlog = await blog.save();
 
-      user.blogs = user.blogs.concat(savedBlog.id);
+      if (user.blogs) {
+        user.blogs = user.blogs.concat(savedBlog.id);
+      } else {
+        user.blogs = [savedBlog.id];
+      }
       await user.save();
 
       res.status(201).json(savedBlog);
     } catch (error) {
+      console.log(error);
       res.status(400).json({ error: "Failed to save blog" });
     }
   },
 
   async updateBlog(req: Request, res: Response) {
     try {
-      const updatedBlog = await Blog.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        {
-          new: true,
-        }
-      );
+      const blogId = req.params.id;
 
-      if (!updatedBlog) {
+      const blog = await Blog.findById(blogId);
+
+      if (!blog) {
         res.status(404).json({ error: "Blog not found" });
         return;
       }
+
+      if (blog.user.toString() !== req.user.id.toString()) {
+        res.status(403).json({ error: "Unauthorized to update this blog" });
+        return;
+      }
+
+      const updatedBlog = await Blog.findByIdAndUpdate(blogId, req.body, {
+        new: true,
+      });
 
       res.status(200).json(updatedBlog);
     } catch (error) {
@@ -65,15 +75,26 @@ export const blogController = {
 
   async deleteBlog(req: Request, res: Response) {
     try {
-      const deletedBlog = await Blog.findByIdAndDelete(req.params.id);
+      const blogId = req.params.id;
 
-      if (!deletedBlog) {
+      const blog = await Blog.findById(blogId);
+
+      if (!blog) {
         res.status(404).json({ error: "Blog not found" });
         return;
       }
 
+      if (blog.user.toString() !== req.user.id.toString()) {
+        res.status(403).json({ error: "Unauthorized to delete this blog" });
+        return;
+      }
+
+      await blog.deleteOne();
+
       res.status(200).json({ message: "Blog deleted successfully" });
+      return;
     } catch (error) {
+      console.log(error);
       res.status(500).json({ error: "Failed to delete blog" });
     }
   },

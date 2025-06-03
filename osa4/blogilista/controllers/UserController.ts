@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { User } from "../models/user";
-import { MongooseError } from "mongoose";
 
 export const userController = {
   async getUsers(req: Request, res: Response) {

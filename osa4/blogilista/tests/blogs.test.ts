@@ -1,9 +1,10 @@
-import test, { after, beforeEach, describe } from "node:test";
+import test, { after, before, beforeEach, describe } from "node:test";
 import { Blog, IBlog } from "../models/blog";
 import supertest from "supertest";
 import assert from "node:assert";
 import mongoose from "mongoose";
 import { app } from "../app";
+import { User } from "../models/user";
 
 const api = supertest(app);
 
@@ -47,12 +48,29 @@ const initialBlogList = [
   },
 ] as IBlog[];
 
+const testUser = {
+  username: "userhenri",
+  name: "Henri",
+  password: "Password123",
+};
+
+let userToken = null;
+
+before(async () => {
+  await User.deleteMany({});
+  await api.post("/api/users").send(testUser);
+  const response = await api.post("/api/login").send(testUser);
+  userToken = response.body.token;
+});
+
 beforeEach(async () => {
   await Blog.deleteMany({});
 
   for (const blogData of initialBlogList) {
-    const blog = new Blog(blogData);
-    await blog.save();
+    await api
+      .post("/api/blogs")
+      .send(blogData)
+      .set("Authorization", userToken!);
   }
 });
 
@@ -74,7 +92,12 @@ describe("blog api", () => {
       url: "https://randomblog.hu/",
       likes: 0,
     };
-    await api.post("/api/blogs").send(newBlog).expect(201);
+
+    await api
+      .post("/api/blogs")
+      .set("Authorization", userToken!)
+      .send(newBlog)
+      .expect(201);
     const response = await api.get("/api/blogs");
     assert.strictEqual(initialBlogList.length + 1, response.body.length);
   });
@@ -84,7 +107,11 @@ describe("blog api", () => {
       author: "Hanna Männikkölahti",
       url: "https://randomfinnishlesson.blogspot.com/",
     };
-    const response = await api.post("/api/blogs").send(newBlog).expect(201);
+    const response = await api
+      .post("/api/blogs")
+      .set("Authorization", userToken!)
+      .send(newBlog)
+      .expect(201);
     const newBlogBody = response.body;
     assert.strictEqual(newBlogBody.likes, 0);
   });
@@ -93,21 +120,33 @@ describe("blog api", () => {
       author: "Hanna Männikkölahti",
       url: "https://randomfinnishlesson.blogspot.com/",
     };
-    await api.post("/api/blogs").send(newBlog).expect(400);
+    await api
+      .post("/api/blogs")
+      .set("Authorization", userToken!)
+      .send(newBlog)
+      .expect(400);
   });
   test("fails for empty url", async () => {
     const newBlog = {
       title: "Random Finnish Lesson",
       author: "Hanna Männikkölahti",
     };
-    await api.post("/api/blogs").send(newBlog).expect(400);
+    await api
+      .post("/api/blogs")
+      .set("Authorization", userToken!)
+      .send(newBlog)
+      .expect(400);
   });
   test("delete single blog", async () => {
     const getResponse = await api.get("/api/blogs");
     const blogs = getResponse.body;
     const deleteBlogId = blogs[0].id;
-    await api.delete(`/api/blogs/${deleteBlogId}`);
-    const afterDeleteResponse = await api.get("/api/blogs");
+    await api
+      .delete(`/api/blogs/${deleteBlogId}`)
+      .set("Authorization", userToken!);
+    const afterDeleteResponse = await api
+      .get("/api/blogs")
+      .set("Authorization", userToken!);
     const blogsAfterDelete = afterDeleteResponse.body;
     const deletedExists = blogsAfterDelete.some(
       (b: any) => b.id === deleteBlogId
@@ -120,7 +159,11 @@ describe("blog api", () => {
     const blogs = getResponse.body;
     const newContent = { likes: 5, title: "New Title Test" };
     const modifyBlog = blogs[0];
-    await api.patch(`/api/blogs/${modifyBlog.id}`).send(newContent).expect(200);
+    await api
+      .patch(`/api/blogs/${modifyBlog.id}`)
+      .set("Authorization", userToken!)
+      .send(newContent)
+      .expect(200);
     const afterModifyResponse = await api.get("/api/blogs");
     const blogsAfterModify = afterModifyResponse.body;
     const modifiedBlog = blogsAfterModify.find(
@@ -129,6 +172,10 @@ describe("blog api", () => {
     assert.strictEqual(modifiedBlog.likes, newContent.likes);
     assert.strictEqual(modifiedBlog.title, newContent.title);
   });
+});
+
+test("can't add blog without a token", async () => {
+  await api.post("/api/blogs").expect(401);
 });
 
 after(async () => {

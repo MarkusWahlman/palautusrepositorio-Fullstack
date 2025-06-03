@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import { apiRouter } from "./routes/Api";
 import { MONGODB_URI, PORT } from "./utils/config";
+import { tokenExtractor } from "./middleware/auth";
 
 mongoose
   .connect(MONGODB_URI)
