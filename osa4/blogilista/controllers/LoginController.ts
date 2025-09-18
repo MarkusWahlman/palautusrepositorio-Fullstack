@@ -29,7 +29,9 @@ export const loginController = {
 
       const token = jwt.sign(userForToken, SECRET);
 
-      res.status(200).send({ token, username: user.username, name: user.name });
+      res
+        .status(200)
+        .send({ token, username: user.username, name: user.name, id: user.id });
     } catch (error) {
       res.status(500).json({ error: "Failed to login" });
     }

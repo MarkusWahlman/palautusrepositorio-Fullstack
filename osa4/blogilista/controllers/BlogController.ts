@@ -73,6 +73,25 @@ export const blogController = {
     }
   },
 
+  async likeBlog(req: Request, res: Response) {
+    try {
+      const blogId = req.params.id;
+
+      const blog = await Blog.findById(blogId);
+      if (!blog) {
+        res.status(404).json({ error: "Blog not found" });
+        return;
+      }
+
+      blog.likes += 1;
+      await blog.save();
+
+      res.status(200).json(blog);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to like blog" });
+    }
+  },
+
   async deleteBlog(req: Request, res: Response) {
     try {
       const blogId = req.params.id;
