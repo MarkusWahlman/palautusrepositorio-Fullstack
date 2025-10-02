@@ -1,0 +1,249 @@
+import { useState, type FormEvent, type ChangeEvent } from "react";
+import { useField } from "./hooks";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useParams,
+  useNavigate,
+} from "react-router-dom";
+
+interface Anecdote {
+  content: string;
+  author: string;
+  info: string;
+  votes: number;
+  id: number;
+}
+
+const Menu = () => {
+  const padding: React.CSSProperties = {
+    paddingRight: 5,
+  };
+
+  return (
+    <div>
+      <a href="#" style={padding}>
+        anecdotes
+      </a>
+      <a href="#" style={padding}>
+        create new
+      </a>
+      <a href="#" style={padding}>
+        about
+      </a>
+    </div>
+  );
+};
+
+interface AnecdoteProps {
+  anecdotes: Anecdote[];
+}
+
+const AnecdoteList = ({ anecdotes }: AnecdoteProps) => (
+  <div>
+    <h2>Anecdotes</h2>
+    <ul>
+      {anecdotes.map((anecdote) => (
+        <li key={anecdote.id}>
+          <Link to={`/anecdotes/${anecdote.id}`}>{anecdote.content}</Link>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+const Anecdote = ({ anecdotes }: AnecdoteProps) => {
+  const { id } = useParams<{ id: string }>();
+  const anecdote = anecdotes.find((a) => a.id === Number(id));
+
+  if (!anecdote) {
+    return <p>Anecdote not found</p>;
+  }
+
+  return (
+    <div>
+      <h2>{anecdote.content}</h2>
+      <div>by {anecdote.author}</div>
+      <div>has {anecdote.votes} votes</div>
+      <div>
+        for more info see <a href={anecdote.info}>{anecdote.info}</a>
+      </div>
+    </div>
+  );
+};
+
+const About = () => (
+  <div>
+    <h2>About anecdote app</h2>
+    <p>According to Wikipedia:</p>
+
+    <em>
+      An anecdote is a brief, revealing account of an individual person or an
+      incident. Occasionally humorous, anecdotes differ from jokes because their
+      primary purpose is not simply to provoke laughter but to reveal a truth
+      more general than the brief tale itself, such as to characterize a person
+      by delineating a specific quirk or trait, to communicate an abstract idea
+      about a person, place, or thing through the concrete details of a short
+      narrative. An anecdote is "a story with a point."
+    </em>
+
+    <p>
+      Software engineering is full of excellent anecdotes, at this app you can
+      find the best and add more.
+    </p>
+  </div>
+);
+
+const Footer = () => (
+  <div>
+    Anecdote app for <a href="https://fullstackopen.com/">Full Stack Open</a>.
+    <br />
+    See{" "}
+    <a href="https://github.com/fullstack-hy2020/routed-anecdotes/blob/master/src/App.js">
+      https://github.com/fullstack-hy2020/routed-anecdotes/blob/master/src/App.js
+    </a>{" "}
+    for the source code.
+  </div>
+);
+
+interface CreateNewProps {
+  addNew: (anecdote: Omit<Anecdote, "id">) => void;
+}
+
+const CreateNew = ({ addNew }: CreateNewProps) => {
+  const content = useField("text");
+  const author = useField("text");
+  const info = useField("text");
+
+  const navigate = useNavigate();
+
+  const handleReset = () => {
+    content.reset();
+    author.reset();
+    info.reset();
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    addNew({
+      content: content.inputProps.value,
+      author: author.inputProps.value,
+      info: info.inputProps.value,
+      votes: 0,
+    });
+
+    handleReset();
+
+    navigate("/");
+  };
+
+  return (
+    <div>
+      <h2>create a new anecdote</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          content
+          <input {...content.inputProps} />
+        </div>
+        <div>
+          author
+          <input {...author.inputProps} />
+        </div>
+        <div>
+          url for more info
+          <input {...info.inputProps} />
+        </div>
+        <button type="submit">create</button>
+        <button type="button" onClick={handleReset}>
+          reset
+        </button>
+      </form>
+    </div>
+  );
+};
+
+const App = () => {
+  const [anecdotes, setAnecdotes] = useState<Anecdote[]>([
+    {
+      content: "If it hurts, do it more often",
+      author: "Jez Humble",
+      info: "https://martinfowler.com/bliki/FrequencyReducesDifficulty.html",
+      votes: 0,
+      id: 1,
+    },
+    {
+      content: "Premature optimization is the root of all evil",
+      author: "Donald Knuth",
+      info: "http://wiki.c2.com/?PrematureOptimization",
+      votes: 0,
+      id: 2,
+    },
+  ]);
+
+  const [notification, setNotification] = useState("");
+
+  const addNew = (anecdote: Omit<Anecdote, "id">) => {
+    const newAnecdote: Anecdote = {
+      ...anecdote,
+      id: Math.round(Math.random() * 10000),
+    };
+    setAnecdotes(anecdotes.concat(newAnecdote));
+    setNotification(`Added: ${newAnecdote.content}`);
+    setTimeout(() => {
+      setNotification("");
+    }, 5000);
+  };
+
+  const anecdoteById = (id: number): Anecdote | undefined =>
+    anecdotes.find((a) => a.id === id);
+
+  const vote = (id: number) => {
+    const anecdote = anecdoteById(id);
+    if (!anecdote) return;
+
+    const voted: Anecdote = {
+      ...anecdote,
+      votes: anecdote.votes + 1,
+    };
+
+    setAnecdotes(anecdotes.map((a) => (a.id === id ? voted : a)));
+  };
+
+  return (
+    <Router>
+      <div>
+        <Link style={{ padding: 5 }} to="/">
+          anecdotes
+        </Link>
+        <Link style={{ padding: 5 }} to="/create">
+          create new
+        </Link>
+        <Link style={{ padding: 5 }} to="/about">
+          about
+        </Link>
+
+        {notification && (
+          <div style={{ border: "1px solid green", padding: 10, margin: 10 }}>
+            {notification}
+          </div>
+        )}
+      </div>
+
+      <Routes>
+        <Route path="/" element={<AnecdoteList anecdotes={anecdotes} />} />
+        <Route path="/create" element={<CreateNew addNew={addNew} />} />
+        <Route path="/about" element={<About />} />
+        <Route
+          path="/anecdotes/:id"
+          element={<Anecdote anecdotes={anecdotes} />}
+        />
+      </Routes>
+
+      <Footer />
+    </Router>
+  );
+};
+
+export default App;
