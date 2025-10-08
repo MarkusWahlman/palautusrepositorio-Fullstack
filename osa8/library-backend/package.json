@@ -1,0 +1,27 @@
+{
+  "name": "books",
+  "version": "1.0.0",
+  "main": "library-backend.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch library-backend.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/mongoose-unique-validator": "^1.0.9",
+    "@types/uuid": "^10.0.0",
+    "tsx": "^4.20.6"
+  },
+  "dependencies": {
+    "@apollo/server": "^5.0.0",
+    "apollo-server": "^3.13.0",
+    "dotenv": "^17.2.3",
+    "graphql": "^16.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.1",
+    "mongoose-unique-validator": "^5.0.1"
+  }
+}
