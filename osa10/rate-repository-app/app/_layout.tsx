@@ -21,6 +21,7 @@ export default function RootLayout() {
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="signin" options={{ headerShown: false }} />
             <Stack.Screen name="signup" options={{ headerShown: false }} />
+            <Stack.Screen name="myreviews" options={{ headerShown: false }} />
             <Stack.Screen name="review" options={{ headerShown: false }} />
             <Stack.Screen
               name="repository/[id]"

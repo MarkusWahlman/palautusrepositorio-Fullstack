@@ -1,9 +1,8 @@
 import { Link, useRouter } from "expo-router";
 import { View, StyleSheet, Pressable, ScrollView } from "react-native";
 import { CustomText } from "./CustomText";
-import { useQuery } from "@apollo/client/react";
-import { gql } from "@apollo/client";
 import useSignOut from "@/hooks/useSignOut";
+import useCurrentUser from "@/hooks/useCurrentUser";
 
 const styles = StyleSheet.create({
   container: {
@@ -20,27 +19,8 @@ const styles = StyleSheet.create({
   text: { color: "white" },
 });
 
-const ME = gql`
-  query Me {
-    me {
-      id
-      username
-    }
-  }
-`;
-
-export interface MeData {
-  me: {
-    id: string;
-    username: string;
-  } | null;
-}
-
 const AppBar = () => {
-  const { data } = useQuery<MeData>(ME, {
-    fetchPolicy: "cache-and-network",
-  });
-  const user = data?.me;
+  const { user } = useCurrentUser();
 
   const signOut = useSignOut();
 
@@ -64,6 +44,11 @@ const AppBar = () => {
             <Link href="/review" asChild>
               <Pressable style={styles.link}>
                 <CustomText style={styles.text}>Create Review</CustomText>
+              </Pressable>
+            </Link>
+            <Link href="/myreviews" asChild>
+              <Pressable style={styles.link}>
+                <CustomText style={styles.text}>My Reviews</CustomText>
               </Pressable>
             </Link>
             <Pressable onPress={handleSignOut} style={styles.link}>

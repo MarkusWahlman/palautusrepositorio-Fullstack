@@ -19,11 +19,21 @@ export interface FullRepository extends Repository {
   };
 }
 
-export interface Review {
+export interface ReviewBase {
   id: string;
   text: string;
   rating: number;
   createdAt: string;
+}
+
+export interface MyReview extends ReviewBase {
+  repository: {
+    id: string;
+    fullName: string;
+  };
+}
+
+export interface Review extends ReviewBase {
   user: {
     id: string;
     username: string;

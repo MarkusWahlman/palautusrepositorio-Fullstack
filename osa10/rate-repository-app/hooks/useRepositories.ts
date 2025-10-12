@@ -3,12 +3,20 @@ import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 
 const GET_REPOSITORIES = gql`
-  query Repositories {
-    repositories {
+  query Repositories(
+    $orderBy: AllRepositoriesOrderBy
+    $orderDirection: OrderDirection
+    $searchKeyword: String
+  ) {
+    repositories(
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+      searchKeyword: $searchKeyword
+    ) {
       edges {
         node {
-          fullName
           id
+          fullName
           description
           language
           forksCount
@@ -22,7 +30,7 @@ const GET_REPOSITORIES = gql`
   }
 `;
 
-interface RepositoriesData {
+export interface RepositoriesData {
   repositories: {
     edges: {
       node: Repository;
@@ -30,19 +38,32 @@ interface RepositoriesData {
   };
 }
 
-const useRepositories = () => {
-  const { data, loading, refetch } = useQuery<RepositoriesData>(
-    GET_REPOSITORIES,
-    {
-      fetchPolicy: "cache-and-network",
-    }
-  );
+export type OrderBy = "CREATED_AT" | "RATING_AVERAGE";
+export type OrderDirection = "ASC" | "DESC";
 
-  const repositories: Repository[] | undefined = data
-    ? data.repositories.edges.map((edge) => edge.node)
-    : undefined;
+export interface UseRepositoriesVariables {
+  orderBy?: OrderBy;
+  orderDirection?: OrderDirection;
+  searchKeyword?: string;
+}
 
-  return { repositories, loading, refetch };
+const useRepositories = (variables?: UseRepositoriesVariables) => {
+  const { data, loading, refetch, error } = useQuery<
+    RepositoriesData,
+    UseRepositoriesVariables
+  >(GET_REPOSITORIES, {
+    variables: {
+      orderBy: variables?.orderBy ?? "CREATED_AT",
+      orderDirection: variables?.orderDirection ?? "DESC",
+      searchKeyword: variables?.searchKeyword ?? "",
+    },
+    fetchPolicy: "cache-and-network",
+  });
+
+  const repositories: Repository[] =
+    data?.repositories?.edges?.map((edge) => edge.node) ?? [];
+
+  return { repositories, loading, refetch, error };
 };
 
 export default useRepositories;
