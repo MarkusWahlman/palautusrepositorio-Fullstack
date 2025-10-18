@@ -1,3 +1,4 @@
 [submodule "osa11/full-stack-open-pokedex"]
 	path = osa11/full-stack-open-pokedex
 	url = https://github.com/MarkusWahlman/full-stack-open-pokedex.git
+	branch = main
