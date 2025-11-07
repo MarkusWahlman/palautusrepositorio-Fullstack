@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: sovellus_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - sovellus_pgdata:/var/lib/postgresql/data
+
+volumes:
+  sovellus_pgdata:
